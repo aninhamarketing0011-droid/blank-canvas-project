@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
   ChevronDown,
@@ -75,16 +76,9 @@ function getExpiryLabel(expiresAt: string | null) {
 
 export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState("network");
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [connections, setConnections] = useState<VendorConnection[]>([]);
-  const [messages, setMessages] = useState<MessageRow[]>([]);
-  const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [userRoles, setUserRoles] = useState<UserRoleRow[]>([]);
-  const [adminCommissions, setAdminCommissions] = useState<AdminCommissionRow[]>([]);
-  const [inviteCodes, setInviteCodes] = useState<InviteCodeRow[]>([]);
-
   const [expandedVendorId, setExpandedVendorId] = useState<string | null>(null);
   const [renewDays, setRenewDays] = useState<Record<string, string>>({});
   const [commissionRate, setCommissionRate] = useState<Record<string, string>>({});
@@ -93,56 +87,162 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
   const [generatingInvite, setGeneratingInvite] = useState(false);
   const [generatedInviteCode, setGeneratedInviteCode] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(true);
+  const {
+    data: profilesData,
+    isLoading: profilesLoading,
+  } = useQuery({
+    queryKey: ["admin", "profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("*");
+      if (error) throw error;
+      return data as Profile[];
+    },
+  });
+  const profiles = profilesData ?? [];
+
+  const {
+    data: connectionsData,
+    isLoading: connectionsLoading,
+  } = useQuery({
+    queryKey: ["admin", "vendor_connections"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("vendor_connections").select("*");
+      if (error) throw error;
+      return data as VendorConnection[];
+    },
+  });
+  const connections = connectionsData ?? [];
+
+  const {
+    data: latestMessagesData,
+    isLoading: messagesLoading,
+  } = useQuery({
+    queryKey: ["admin", "chat_messages", "latest"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chat_messages")
+        .select("id, chat_id, sender_id, created_at, type, is_read")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data as MessageRow[];
+    },
+  });
+  const latestMessages = latestMessagesData ?? [];
+
+  const {
+    data: ordersData,
+    isLoading: ordersLoading,
+  } = useQuery({
+    queryKey: ["admin", "orders", "recent"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data as OrderRow[];
+    },
+  });
+  const orders = ordersData ?? [];
+
+  const {
+    data: userRolesData,
+    isLoading: rolesLoading,
+  } = useQuery({
+    queryKey: ["admin", "user_roles"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("user_roles").select("*");
+      if (error) throw error;
+      return data as UserRoleRow[];
+    },
+  });
+  const userRoles = userRolesData ?? [];
+
+  const {
+    data: adminCommissionsData,
+    isLoading: commissionsLoading,
+  } = useQuery({
+    queryKey: ["admin", "admin_commissions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("admin_commissions").select("*");
+      if (error) throw error;
+      return data as AdminCommissionRow[];
+    },
+  });
+  const adminCommissions = adminCommissionsData ?? [];
+
+  const {
+    data: inviteCodesData,
+    isLoading: invitesLoading,
+  } = useQuery({
+    queryKey: ["admin", "invite_codes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("invite_codes")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data as InviteCodeRow[];
+    },
+  });
+  const inviteCodes = inviteCodesData ?? [];
+
+  const loading =
+    profilesLoading ||
+    connectionsLoading ||
+    messagesLoading ||
+    ordersLoading ||
+    rolesLoading ||
+    commissionsLoading ||
+    invitesLoading;
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
-      setLoading(true);
-
-      const [profilesRes, connectionsRes, messagesRes, ordersRes, rolesRes, commissionsRes, invitesRes] =
-        await Promise.all([
-          supabase.from("profiles").select("*"),
-          supabase.from("vendor_connections").select("*"),
-          supabase.from("chat_messages").select("*"),
-          supabase.from("orders").select("*"),
-          supabase.from("user_roles").select("*"),
-          supabase.from("admin_commissions").select("*"),
-          supabase.from("invite_codes").select("*"),
-        ]);
-
-      if (!isMounted) return;
-
-      setProfiles(profilesRes.data ?? []);
-      setConnections(connectionsRes.data ?? []);
-      setMessages(messagesRes.data ?? []);
-      setOrders(ordersRes.data ?? []);
-      setUserRoles(rolesRes.data ?? []);
-      setAdminCommissions(commissionsRes.data ?? []);
-      setInviteCodes(invitesRes.data ?? []);
-
-      setLoading(false);
-    };
-
-    fetchData();
-
     const channel = supabase
       .channel("admin-dashboard-v3")
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => fetchData())
-      .on("postgres_changes", { event: "*", schema: "public", table: "vendor_connections" }, () => fetchData())
-      .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages" }, () => fetchData())
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => fetchData())
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => fetchData())
-      .on("postgres_changes", { event: "*", schema: "public", table: "admin_commissions" }, () => fetchData())
-      .on("postgres_changes", { event: "*", schema: "public", table: "invite_codes" }, () => fetchData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () =>
+        queryClient.invalidateQueries({ queryKey: ["admin", "profiles"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "vendor_connections" },
+        () => queryClient.invalidateQueries({ queryKey: ["admin", "vendor_connections"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chat_messages" },
+        () => queryClient.invalidateQueries({ queryKey: ["admin", "chat_messages", "latest"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => queryClient.invalidateQueries({ queryKey: ["admin", "orders", "recent"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_roles" },
+        () => queryClient.invalidateQueries({ queryKey: ["admin", "user_roles"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "admin_commissions" },
+        () => queryClient.invalidateQueries({ queryKey: ["admin", "admin_commissions"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "invite_codes" },
+        () => queryClient.invalidateQueries({ queryKey: ["admin", "invite_codes"] }),
+      )
       .subscribe();
 
     return () => {
-      isMounted = false;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [queryClient]);
+
+
 
   const rolesByUser = useMemo(() => {
     const map = new Map<string, UserRoleRow["role"][]>();
@@ -402,10 +502,6 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
     });
   };
 
-  const latestMessages = useMemo(
-    () => [...messages].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 32),
-    [messages],
-  );
 
   const copyInviteToClipboard = async () => {
     if (!generatedInviteCode) return;
@@ -1060,11 +1156,6 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                             <span className="text-[10px] text-amber-300">NÃO LIDA</span>
                           )}
                         </div>
-                        {m.content && (
-                          <pre className="mt-1 text-[11px] text-muted-foreground whitespace-pre-wrap break-words">
-                            {JSON.stringify(m.content, null, 2)}
-                          </pre>
-                        )}
                       </div>
                     ))}
                   </div>
