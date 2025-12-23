@@ -26,11 +26,11 @@ interface AdminDashboardProps {
   onImpersonate?: (vendorId: string) => void;
 }
 
- type Profile = Tables<"profiles">;
- type VendorConnection = Tables<"vendor_connections">;
- type MessageRow = Tables<"chat_messages">;
- type OrderRow = Tables<"orders">;
- type UserRoleRow = Tables<"user_roles">;
+type Profile = Tables<"profiles">;
+type VendorConnection = Tables<"vendor_connections">;
+type MessageRow = Tables<"chat_messages">;
+type OrderRow = Tables<"orders">;
+type UserRoleRow = Tables<"user_roles">;
 
 interface VendorHierarchyNode {
   profile: Profile;
@@ -64,14 +64,13 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
     const fetchData = async () => {
       setLoading(true);
 
-      const [profilesRes, connectionsRes, messagesRes, ordersRes, rolesRes] =
-        await Promise.all([
-          supabase.from("profiles").select("*"),
-          supabase.from("vendor_connections").select("*"),
-          supabase.from("chat_messages").select("*"),
-          supabase.from("orders").select("*"),
-          supabase.from("user_roles").select("*"),
-        ]);
+      const [profilesRes, connectionsRes, messagesRes, ordersRes, rolesRes] = await Promise.all([
+        supabase.from("profiles").select("*"),
+        supabase.from("vendor_connections").select("*"),
+        supabase.from("chat_messages").select("*"),
+        supabase.from("orders").select("*"),
+        supabase.from("user_roles").select("*"),
+      ]);
 
       if (!isMounted) return;
 
@@ -87,31 +86,11 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
 
     const channel = supabase
       .channel("admin-dashboard-v2")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "profiles" },
-        () => fetchData(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "vendor_connections" },
-        () => fetchData(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "chat_messages" },
-        () => fetchData(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders" },
-        () => fetchData(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_roles" },
-        () => fetchData(),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => fetchData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "vendor_connections" }, () => fetchData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages" }, () => fetchData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => fetchData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => fetchData())
       .subscribe();
 
     return () => {
@@ -182,10 +161,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
   const today = new Date().toISOString().slice(0, 10);
   const ordersToday = orders.filter((o) => (o.created_at ?? "").startsWith(today));
   const totalOrdersToday = ordersToday.length;
-  const revenueTodayCents = ordersToday.reduce(
-    (acc, o) => acc + (o.total_cents ?? 0),
-    0,
-  );
+  const revenueTodayCents = ordersToday.reduce((acc, o) => acc + (o.total_cents ?? 0), 0);
 
   const headerStatusLabel = loading ? "SYNCING" : "SECURE";
 
@@ -195,10 +171,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
   };
 
   const handleToggleBlock = async (userId: string, currentStatus: boolean) => {
-    await supabase
-      .from("profiles")
-      .update({ is_blocked: !currentStatus })
-      .eq("id", userId);
+    await supabase.from("profiles").update({ is_blocked: !currentStatus }).eq("id", userId);
   };
 
   const handleRenewAccess = async (userId: string) => {
@@ -209,19 +182,13 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
     const now = new Date();
     now.setDate(now.getDate() + parsed);
 
-    await supabase
-      .from("profiles")
-      .update({ vendor_access_expires_at: now.toISOString() })
-      .eq("id", userId);
+    await supabase.from("profiles").update({ vendor_access_expires_at: now.toISOString() }).eq("id", userId);
 
     setRenewDays((prev) => ({ ...prev, [userId]: "" }));
   };
 
   const latestMessages = useMemo(
-    () =>
-      [...messages]
-        .sort((a, b) => b.created_at.localeCompare(a.created_at))
-        .slice(0, 32),
+    () => [...messages].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 32),
     [messages],
   );
 
@@ -230,16 +197,9 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
       <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur flex items-center justify-between px-6 py-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono tracking-[0.3em] text-primary uppercase">
-              SYSTEM ROOT
-            </span>
-            <Badge
-              variant={loading ? "outline" : "secondary"}
-              className="text-[10px] tracking-[0.18em] uppercase"
-            >
-              <span className={loading ? "text-muted-foreground" : "text-emerald-400"}>
-                {headerStatusLabel}
-              </span>
+            <span className="text-xs font-mono tracking-[0.3em] text-primary uppercase">SYSTEM ROOT</span>
+            <Badge variant={loading ? "outline" : "secondary"} className="text-[10px] tracking-[0.18em] uppercase">
+              <span className={loading ? "text-muted-foreground" : "text-emerald-400"}>{headerStatusLabel}</span>
             </Badge>
           </div>
           <p className="text-[11px] text-muted-foreground font-mono tracking-[0.18em]">
@@ -298,9 +258,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-mono">{totalUsers}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Perfis ativos no sistema.
-                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Perfis ativos no sistema.</p>
                 </CardContent>
               </Card>
 
@@ -313,9 +271,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-mono">{totalOrders}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Pedidos registrados em toda a rede.
-                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Pedidos registrados em toda a rede.</p>
                 </CardContent>
               </Card>
 
@@ -328,9 +284,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-mono">{totalOrdersToday}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Pedidos com data igual ao dia atual.
-                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Pedidos com data igual ao dia atual.</p>
                 </CardContent>
               </Card>
 
@@ -343,9 +297,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-mono">{formatCurrencyBRL(revenueTodayCents)}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Soma total dos pedidos de hoje.
-                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Soma total dos pedidos de hoje.</p>
                 </CardContent>
               </Card>
             </section>
@@ -356,7 +308,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
               <div className="space-y-3">
                 {vendorHierarchy.length === 0 && (
                   <p className="text-[11px] text-muted-foreground font-mono">
-                    Nenhum vendor encontrado. Atribua o papel "vendor" a usuários para começar.
+                    Nenhum vendor encontrado. Atribua o papel &quot;vendor&quot; a usuários para começar.
                   </p>
                 )}
 
@@ -374,9 +326,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                       className={`border px-4 py-3 bg-background/80 transition-colors cursor-pointer ${
                         isExpanded ? "border-primary/70" : "border-border/70"
                       } ${node.profile.is_blocked ? "opacity-60" : "opacity-100"}`}
-                      onClick={() =>
-                        setExpandedVendorId((prev) => (prev === vendorId ? null : vendorId))
-                      }
+                      onClick={() => setExpandedVendorId((prev) => (prev === vendorId ? null : vendorId))}
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
@@ -384,12 +334,8 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                             {(node.profile.display_name || "V").slice(0, 2).toUpperCase()}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-mono">
-                              {node.profile.display_name || "Vendor sem nome"}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground font-mono">
-                              {vendorId}
-                            </span>
+                            <span className="text-sm font-mono">{node.profile.display_name || "Vendor sem nome"}</span>
+                            <span className="text-[10px] text-muted-foreground font-mono">{vendorId}</span>
                           </div>
                           <div className="flex items-center gap-2 ml-3">
                             <Badge
@@ -420,17 +366,12 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                             </span>
                           </div>
 
-                          <div
-                            className="flex items-center gap-1"
-                            onClick={(e) => e.stopPropagation()}
-                          >
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                             <Input
                               type="number"
                               placeholder="Dias"
                               value={renewDays[vendorId] ?? ""}
-                              onChange={(e) =>
-                                setRenewDays((prev) => ({ ...prev, [vendorId]: e.target.value }))
-                              }
+                              onChange={(e) => setRenewDays((prev) => ({ ...prev, [vendorId]: e.target.value }))}
                               className="w-20 h-8 text-[11px] font-mono"
                             />
                             <Button
@@ -445,9 +386,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                               size="icon"
                               variant="outline"
                               className="h-8 w-8"
-                              onClick={() =>
-                                handleToggleBlock(vendorId, Boolean(node.profile.is_blocked))
-                              }
+                              onClick={() => handleToggleBlock(vendorId, Boolean(node.profile.is_blocked))}
                             >
                               <Lock className="w-3 h-3" />
                             </Button>
@@ -468,14 +407,11 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                               className="h-8 w-8 border-destructive/60 text-destructive"
                               onClick={async () => {
                                 const confirmed = window.confirm(
-                                  "Tem certeza que deseja deletar este vendor e suas conexões?",
+                                  "Tem certeza que deseja deletar as conexões deste vendor?",
                                 );
                                 if (!confirmed) return;
 
-                                await supabase
-                                  .from("vendor_connections")
-                                  .delete()
-                                  .eq("vendor_id", vendorId);
+                                await supabase.from("vendor_connections").delete().eq("vendor_id", vendorId);
                               }}
                             >
                               <Trash2 className="w-3 h-3" />
@@ -502,9 +438,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                               <span className="text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
                                 CLIENTES VINCULADOS
                               </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {node.clients.length}
-                              </span>
+                              <span className="text-[10px] text-muted-foreground">{node.clients.length}</span>
                             </div>
                             {node.clients.length === 0 && (
                               <p className="text-[11px] text-muted-foreground">
@@ -527,9 +461,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                               <span className="text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
                                 FROTA DE MOTORISTAS
                               </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {node.drivers.length}
-                              </span>
+                              <span className="text-[10px] text-muted-foreground">{node.drivers.length}</span>
                             </div>
                             {node.drivers.length === 0 && (
                               <p className="text-[11px] text-muted-foreground">
@@ -578,12 +510,8 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                       <DollarSign className="w-4 h-4 text-primary" />
                     </CardHeader>
                     <CardContent className="pt-1">
-                      <p className="text-2xl font-mono mb-1">
-                        {formatCurrencyBRL(finance.totalCents)}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground mb-1">
-                        {finance.count} vendas registradas
-                      </p>
+                      <p className="text-2xl font-mono mb-1">{formatCurrencyBRL(finance.totalCents)}</p>
+                      <p className="text-[11px] text-muted-foreground mb-1">{finance.count} vendas registradas</p>
                       <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                         <TrendingUp className="w-3 h-3 text-primary" />
                         <span>
@@ -609,9 +537,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 <ScrollArea className="h-[420px] pr-3">
                   <div className="space-y-2 text-[11px] font-mono">
                     {latestMessages.length === 0 && (
-                      <p className="text-[11px] text-muted-foreground">
-                        Nenhuma mensagem registrada ainda.
-                      </p>
+                      <p className="text-[11px] text-muted-foreground">Nenhuma mensagem registrada ainda.</p>
                     )}
                     {latestMessages.map((m) => (
                       <div
@@ -619,24 +545,17 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                         className="border border-border/70 bg-background/70 px-3 py-2 flex flex-col gap-1"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-muted-foreground">
-                            {m.sender_id}
-                          </span>
+                          <span className="text-[10px] text-muted-foreground">{m.sender_id}</span>
                           <span className="text-[10px] text-muted-foreground">
                             {new Date(m.created_at).toLocaleString("pt-BR")}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] tracking-[0.16em] uppercase"
-                          >
+                          <Badge variant="outline" className="text-[9px] tracking-[0.16em] uppercase">
                             {m.type}
                           </Badge>
                           <span className="text-xs truncate max-w-[260px]">
-                            {typeof m.content === "string"
-                              ? m.content
-                              : JSON.stringify(m.content).slice(0, 80)}
+                            {typeof m.content === "string" ? m.content : JSON.stringify(m.content).slice(0, 80)}
                           </span>
                         </div>
                       </div>
