@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_commissions: {
+        Row: {
+          commission_cents: number
+          commission_rate: number | null
+          created_at: string
+          id: string
+          order_id: string
+          vendor_id: string
+        }
+        Insert: {
+          commission_cents: number
+          commission_rate?: number | null
+          created_at?: string
+          id?: string
+          order_id: string
+          vendor_id: string
+        }
+        Update: {
+          commission_cents?: number
+          commission_rate?: number | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_commissions_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           chat_id: string
@@ -345,6 +387,44 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_clients: {
+        Row: {
+          access_expires_at: string | null
+          client_id: string
+          created_at: string
+          id: string
+          is_blocked: boolean
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          access_expires_at?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          is_blocked?: boolean
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          access_expires_at?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_blocked?: boolean
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_clients_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_connections: {
         Row: {
           access_expires_at: string | null
@@ -378,9 +458,84 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_drivers: {
+        Row: {
+          access_expires_at: string | null
+          created_at: string
+          driver_id: string
+          id: string
+          is_blocked: boolean
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          access_expires_at?: string | null
+          created_at?: string
+          driver_id: string
+          id?: string
+          is_blocked?: boolean
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          access_expires_at?: string | null
+          created_at?: string
+          driver_id?: string
+          id?: string
+          is_blocked?: boolean
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_drivers_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          access_expires_at: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          is_blocked: boolean
+          mercado_pago_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          access_expires_at?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          is_blocked?: boolean
+          mercado_pago_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          access_expires_at?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_blocked?: boolean
+          mercado_pago_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      orders_finance_view: {
+        Row: {
+          order_count: number | null
+          total_cents: number | null
+          vendor_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
