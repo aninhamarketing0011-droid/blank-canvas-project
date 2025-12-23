@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { PinLock } from "@/components/PinLock";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { usernameToEmail } from "@/lib/authHelpers";
 
 interface LoginFlowProps {
   onBack: () => void;
@@ -47,7 +48,7 @@ export function LoginFlow({ onBack, onLoginSuccess }: LoginFlowProps) {
     setError("");
     setLoading(true);
 
-    const email = `${username.trim().toLowerCase()}@sys.app`;
+    const email = usernameToEmail(username);
     const password = `${code}#secret`;
 
     const { error } = await supabase.auth.signInWithPassword({
