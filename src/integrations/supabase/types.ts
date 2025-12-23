@@ -311,6 +311,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          commission_rate: number | null
           created_at: string
           display_name: string | null
           failed_attempts: number
@@ -329,6 +330,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          commission_rate?: number | null
           created_at?: string
           display_name?: string | null
           failed_attempts?: number
@@ -347,6 +349,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          commission_rate?: number | null
           created_at?: string
           display_name?: string | null
           failed_attempts?: number
