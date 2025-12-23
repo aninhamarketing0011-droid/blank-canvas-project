@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -10,6 +10,7 @@ import {
   UserCircle2,
   Users,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -45,52 +46,64 @@ type VendorClient = Tables<"vendor_clients">;
 
 export function VendorDashboard() {
   const { user } = useSupabaseAuth();
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [clients, setClients] = useState<VendorClient[]>([]);
+  const vendorId = user?.id;
 
-  useEffect(() => {
-    if (!user) return;
+  const {
+    data: products = [],
+    isLoading: productsLoading,
+  } = useQuery<Product[]>({
+    queryKey: ["vendor", vendorId, "products"],
+    enabled: !!vendorId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
-    let isCancelled = false;
+  const {
+    data: orders = [],
+    isLoading: ordersLoading,
+  } = useQuery<Order[]>({
+    queryKey: ["vendor", vendorId, "orders"],
+    enabled: !!vendorId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id,vendor_id,total_cents,created_at,status")
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data as Order[];
+    },
+  });
 
-    const loadData = async () => {
-      setLoading(true);
+  const {
+    data: clients = [],
+    isLoading: clientsLoading,
+  } = useQuery<VendorClient[]>({
+    queryKey: ["vendor", vendorId, "clients"],
+    enabled: !!vendorId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("vendor_clients")
+        .select("*")
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
-      const [productsRes, ordersRes, clientsRes] = await Promise.all([
-        supabase
-          .from("products")
-          .select("*")
-          .eq("vendor_id", user.id)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("orders")
-          .select("id,vendor_id,total_cents,created_at,status")
-          .eq("vendor_id", user.id)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("vendor_clients")
-          .select("*")
-          .eq("vendor_id", user.id)
-          .order("created_at", { ascending: false }),
-      ]);
+  const loading = productsLoading || ordersLoading || clientsLoading;
 
-      if (isCancelled) return;
-
-      if (!productsRes.error && productsRes.data) setProducts(productsRes.data);
-      if (!ordersRes.error && ordersRes.data) setOrders(ordersRes.data as Order[]);
-      if (!clientsRes.error && clientsRes.data) setClients(clientsRes.data);
-
-      setLoading(false);
-    };
-
-    loadData();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [user]);
 
   const kpis = useMemo(() => {
     const activeProducts = products.filter((p) => p.is_active).length;
