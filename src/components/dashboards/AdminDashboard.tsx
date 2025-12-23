@@ -291,12 +291,12 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
 
   const handleSaveCommissionRate = async (vendorId: string) => {
     const value = commissionRate[vendorId];
-    const parsed = Number(value.replace(",", "."));
+    const parsed = Number(value?.replace(",", "."));
 
-    if (!parsed || parsed <= 0) {
+    if (isNaN(parsed) || parsed < 0) {
       toast({
         title: "Valor inválido",
-        description: "Informe uma porcentagem de comissão maior que zero.",
+        description: "Informe % válida.",
         variant: "destructive",
       });
       return;
@@ -304,24 +304,22 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
 
     const rateDecimal = parsed / 100;
 
+    // FIX CRÍTICO: Agora salva em 'profiles', coluna 'commission_rate'
     const { error } = await supabase
-      .from("admin_commissions")
-      .update({ commission_rate: rateDecimal })
-      .eq("vendor_id", vendorId);
+      .from("profiles")
+      .update({ commission_rate: rateDecimal } as any)
+      .eq("id", vendorId);
 
     if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
       toast({
-        title: "Falha ao atualizar comissão",
-        description: error.message,
-        variant: "destructive",
+        title: "Sucesso",
+        description: `Taxa de ${parsed}% salva no perfil do Vendedor.`,
+        className: "bg-green-500/10 border-green-500 text-green-400",
       });
-      return;
+      setCommissionRate((prev) => ({ ...prev, [vendorId]: "" }));
     }
-
-    toast({
-      title: "Comissão atualizada",
-      description: `Comissão do vendor atualizada para ${parsed.toFixed(2)}%.`,
-    });
   };
 
   const handleResetPin = async () => {
