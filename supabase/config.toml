@@ -1,0 +1,10 @@
+project_id = "xlahlhjhuokpzwczqzoz"
+
+[functions.username-signup]
+verify_jwt = false
+
+[functions.validate-invite]
+verify_jwt = true
+
+[functions.link-invite-user]
+verify_jwt = true
