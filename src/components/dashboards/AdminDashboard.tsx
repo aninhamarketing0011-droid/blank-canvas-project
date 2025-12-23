@@ -193,13 +193,18 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur flex items-center justify-between px-6 py-4">
+    <div className="min-h-screen text-foreground flex flex-col bg-background bg-[radial-gradient(ellipse_at_top,_hsl(var(--primary))/0.25,_hsl(var(--background)),_hsl(var(--background)))]">
+      <header className="sticky top-0 z-20 flex items-center justify-between px-6 py-4 border-b border-primary/20 bg-background/60 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.7)]">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono tracking-[0.3em] text-primary uppercase">SYSTEM ROOT</span>
-            <Badge variant={loading ? "outline" : "secondary"} className="text-[10px] tracking-[0.18em] uppercase">
-              <span className={loading ? "text-muted-foreground" : "text-emerald-400"}>{headerStatusLabel}</span>
+            <span className="text-xs font-mono tracking-[0.3em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary drop-shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
+              SYSTEM ROOT
+            </span>
+            <Badge
+              variant={loading ? "outline" : "secondary"}
+              className="text-[10px] tracking-[0.18em] uppercase px-2 py-1 border-primary/40 bg-background/60 backdrop-blur-md"
+            >
+              <span className={loading ? "text-muted-foreground" : "text-primary"}>{headerStatusLabel}</span>
             </Badge>
           </div>
           <p className="text-[11px] text-muted-foreground font-mono tracking-[0.18em]">
@@ -210,7 +215,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
           <Button
             variant="outline"
             size="sm"
-            className="text-[11px] tracking-[0.18em] uppercase border-destructive/60 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            className="text-[11px] tracking-[0.18em] uppercase border-destructive/60 text-destructive hover:bg-destructive hover:text-destructive-foreground hover:shadow-[0_0_18px_hsl(var(--destructive)/0.7)] transition-all duration-300"
             onClick={handleSignOut}
           >
             <LogOut className="w-3 h-3 mr-1.5" /> SAIR
@@ -220,41 +225,41 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
 
       <main className="flex-1 px-4 md:px-6 lg:px-10 py-5">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col gap-5">
-          <TabsList className="w-full justify-start bg-background/80 border border-border/60 rounded-none px-1 py-1 gap-1 overflow-x-auto">
+          <TabsList className="w-full justify-start bg-background/70 border border-border/60 rounded-none px-1 py-1 gap-1 overflow-x-auto backdrop-blur-md scanline">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border-primary/60 border border-transparent text-[11px] font-mono tracking-[0.18em] rounded-none px-3 py-2"
+              className="hover-scale border border-white/5 bg-card/60 text-[11px] font-mono tracking-[0.18em] rounded-none px-3 py-2 text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:shadow-[0_0_15px_-3px_hsl(var(--primary)/0.5)] data-[state=active]:animate-pulse-glow"
             >
               VISÃO GERAL
             </TabsTrigger>
             <TabsTrigger
               value="network"
-              className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border-primary/60 border border-transparent text-[11px] font-mono tracking-[0.18em] rounded-none px-3 py-2"
+              className="hover-scale border border-white/5 bg-card/60 text-[11px] font-mono tracking-[0.18em] rounded-none px-3 py-2 text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:shadow-[0_0_15px_-3px_hsl(var(--primary)/0.5)] data-[state=active]:animate-pulse-glow"
             >
               REDES &amp; HIERARQUIA
             </TabsTrigger>
             <TabsTrigger
               value="finance"
-              className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border-primary/60 border border-transparent text-[11px] font-mono tracking-[0.18em] rounded-none px-3 py-2"
+              className="hover-scale border border-white/5 bg-card/60 text-[11px] font-mono tracking-[0.18em] rounded-none px-3 py-2 text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:shadow-[0_0_15px_-3px_hsl(var(--primary)/0.5)] data-[state=active]:animate-pulse-glow"
             >
               FINANCEIRO
             </TabsTrigger>
             <TabsTrigger
               value="monitor"
-              className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border-primary/60 border border-transparent text-[11px] font-mono tracking-[0.18em] rounded-none px-3 py-2"
+              className="hover-scale border border-white/5 bg-card/60 text-[11px] font-mono tracking-[0.18em] rounded-none px-3 py-2 text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:shadow-[0_0_15px_-3px_hsl(var(--primary)/0.5)] data-[state=active]:animate-pulse-glow"
             >
               MONITOR
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="mt-4 space-y-5">
+          <TabsContent value="overview" className="mt-4 space-y-5 animate-fade-in">
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <Card className="bg-background/80 border-border/70">
+              <Card className="group bg-card/80 backdrop-blur-md border border-border/60 rounded-xl overflow-hidden transition-all duration-300 hover:border-primary hover:shadow-[0_0_20px_-5px_hsl(var(--primary)/0.6)] hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                     Usuários Totais
                   </CardTitle>
-                  <Users className="w-4 h-4 text-primary" />
+                  <Users className="w-4 h-4 text-primary group-hover:animate-pulse-glow" />
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-mono">{totalUsers}</p>
@@ -262,12 +267,12 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 </CardContent>
               </Card>
 
-              <Card className="bg-background/80 border-border/70">
+              <Card className="group bg-card/80 backdrop-blur-md border border-border/60 rounded-xl overflow-hidden transition-all duration-300 hover:border-secondary hover:shadow-[0_0_20px_-5px_hsl(var(--secondary)/0.6)] hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                     Pedidos Totais
                   </CardTitle>
-                  <Network className="w-4 h-4 text-primary" />
+                  <Network className="w-4 h-4 text-secondary group-hover:animate-pulse-glow" />
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-mono">{totalOrders}</p>
@@ -275,12 +280,12 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 </CardContent>
               </Card>
 
-              <Card className="bg-background/80 border-border/70">
+              <Card className="group bg-card/80 backdrop-blur-md border border-border/60 rounded-xl overflow-hidden transition-all duration-300 hover:border-accent hover:shadow-[0_0_20px_-5px_hsl(var(--accent)/0.6)] hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                     Vendas Hoje
                   </CardTitle>
-                  <Activity className="w-4 h-4 text-primary" />
+                  <Activity className="w-4 h-4 text-accent group-hover:animate-pulse-glow" />
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-mono">{totalOrdersToday}</p>
@@ -288,12 +293,12 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 </CardContent>
               </Card>
 
-              <Card className="bg-background/80 border-border/70">
+              <Card className="group bg-card/80 backdrop-blur-md border border-border/60 rounded-xl overflow-hidden transition-all duration-300 hover:border-primary hover:shadow-[0_0_24px_-6px_hsl(var(--primary)/0.7)] hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                     Receita de Hoje
                   </CardTitle>
-                  <DollarSign className="w-4 h-4 text-primary" />
+                  <DollarSign className="w-4 h-4 text-primary group-hover:animate-pulse-glow" />
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-mono">{formatCurrencyBRL(revenueTodayCents)}</p>
@@ -323,14 +328,14 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                   return (
                     <div
                       key={vendorId}
-                      className={`border px-4 py-3 bg-background/80 transition-colors cursor-pointer ${
-                        isExpanded ? "border-primary/70" : "border-border/70"
+                      className={`group border px-4 py-3 bg-card/80 backdrop-blur-md rounded-xl overflow-hidden transition-all duration-300 cursor-pointer hover:border-accent hover:shadow-[0_0_20px_-5px_hsl(var(--accent)/0.6)] hover:-translate-y-1 ${
+                        isExpanded ? "border-accent" : "border-border/70"
                       } ${node.profile.is_blocked ? "opacity-60" : "opacity-100"}`}
                       onClick={() => setExpandedVendorId((prev) => (prev === vendorId ? null : vendorId))}
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full border border-primary/70 flex items-center justify-center text-[11px] font-mono">
+                          <div className="w-9 h-9 rounded-full border border-accent flex items-center justify-center text-[11px] font-mono bg-background/80 shadow-[0_0_18px_hsl(var(--accent)/0.5)]">
                             {(node.profile.display_name || "V").slice(0, 2).toUpperCase()}
                           </div>
                           <div className="flex flex-col">
@@ -340,14 +345,14 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                           <div className="flex items-center gap-2 ml-3">
                             <Badge
                               variant="outline"
-                              className="border-emerald-500/60 text-emerald-400 text-[10px] font-mono tracking-[0.16em] uppercase"
+                              className="border-primary/70 text-primary text-[10px] font-mono tracking-[0.16em] uppercase bg-background/80"
                             >
                               ONLINE
                             </Badge>
                             {node.profile.is_blocked && (
                               <Badge
                                 variant="outline"
-                                className="border-destructive/70 text-destructive text-[10px] font-mono tracking-[0.16em] uppercase"
+                                className="border-destructive/70 text-destructive text-[10px] font-mono tracking-[0.16em] uppercase bg-background/80 shadow-[0_0_16px_hsl(var(--destructive)/0.6)]"
                               >
                                 BLOQUEADO
                               </Badge>
@@ -372,12 +377,12 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                               placeholder="Dias"
                               value={renewDays[vendorId] ?? ""}
                               onChange={(e) => setRenewDays((prev) => ({ ...prev, [vendorId]: e.target.value }))}
-                              className="w-20 h-8 text-[11px] font-mono"
+                              className="w-20 h-8 text-[11px] font-mono bg-background/80 border-border/70"
                             />
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-8 text-[10px] font-mono tracking-[0.14em] uppercase"
+                              className="h-8 text-[10px] font-mono tracking-[0.14em] uppercase hover:border-primary hover:text-primary hover:shadow-[0_0_14px_hsl(var(--primary)/0.6)]"
                               onClick={() => handleRenewAccess(vendorId)}
                             >
                               RENOVAR
@@ -385,7 +390,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                             <Button
                               size="icon"
                               variant="outline"
-                              className="h-8 w-8"
+                              className="h-8 w-8 hover:border-destructive hover:text-destructive hover:shadow-[0_0_16px_hsl(var(--destructive)/0.6)]"
                               onClick={() => handleToggleBlock(vendorId, Boolean(node.profile.is_blocked))}
                             >
                               <Lock className="w-3 h-3" />
@@ -393,7 +398,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                             <Button
                               size="icon"
                               variant="outline"
-                              className="h-8 w-8"
+                              className="h-8 w-8 hover:border-secondary hover:text-secondary hover:shadow-[0_0_16px_hsl(var(--secondary)/0.6)]"
                               onClick={() => {
                                 if (onImpersonate) onImpersonate(vendorId);
                                 console.log("ACESSAR vendor", vendorId);
@@ -404,7 +409,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                             <Button
                               size="icon"
                               variant="outline"
-                              className="h-8 w-8 border-destructive/60 text-destructive"
+                              className="h-8 w-8 border-destructive/60 text-destructive hover:bg-destructive hover:text-destructive-foreground hover:shadow-[0_0_18px_hsl(var(--destructive)/0.7)]"
                               onClick={async () => {
                                 const confirmed = window.confirm(
                                   "Tem certeza que deseja deletar as conexões deste vendor?",
@@ -448,7 +453,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                             {node.clients.map((client) => (
                               <div
                                 key={client.id}
-                                className="border border-accent/70 bg-background/60 px-3 py-2 flex flex-col"
+                                className="border border-secondary bg-background/60 px-3 py-2 flex flex-col rounded-lg shadow-[0_0_14px_-6px_hsl(var(--secondary)/0.6)]"
                               >
                                 <span className="text-xs">{client.display_name || "Cliente"}</span>
                                 <span className="text-[10px] text-muted-foreground">{client.id}</span>
@@ -471,7 +476,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                             {node.drivers.map((driver) => (
                               <div
                                 key={driver.id}
-                                className="border border-primary/70 bg-background/60 px-3 py-2 flex flex-col"
+                                className="border border-primary bg-background/60 px-3 py-2 flex flex-col rounded-lg shadow-[0_0_14px_-6px_hsl(var(--primary)/0.6)]"
                               >
                                 <span className="text-xs">{driver.display_name || "Motorista"}</span>
                                 <span className="text-[10px] text-muted-foreground">{driver.id}</span>
@@ -487,7 +492,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="finance" className="mt-4 space-y-4">
+          <TabsContent value="finance" className="mt-4 space-y-4 animate-fade-in">
             <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {vendorHierarchy.length === 0 && (
                 <p className="text-[11px] text-muted-foreground font-mono">
@@ -502,12 +507,15 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                 };
 
                 return (
-                  <Card key={vendorId} className="bg-background/80 border-border/70">
+                  <Card
+                    key={vendorId}
+                    className="group bg-card/80 backdrop-blur-md border border-border/60 rounded-xl overflow-hidden transition-all duration-300 hover:border-primary hover:shadow-[0_0_20px_-5px_hsl(var(--primary)/0.6)] hover:-translate-y-1"
+                  >
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                         {node.profile.display_name || "Vendor"}
                       </CardTitle>
-                      <DollarSign className="w-4 h-4 text-primary" />
+                      <DollarSign className="w-4 h-4 text-primary group-hover:animate-pulse-glow" />
                     </CardHeader>
                     <CardContent className="pt-1">
                       <p className="text-2xl font-mono mb-1">{formatCurrencyBRL(finance.totalCents)}</p>
@@ -525,13 +533,13 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
             </section>
           </TabsContent>
 
-          <TabsContent value="monitor" className="mt-4">
-            <Card className="bg-background/80 border-border/70">
+          <TabsContent value="monitor" className="mt-4 animate-fade-in">
+            <Card className="group bg-card/80 backdrop-blur-md border border-border/60 rounded-xl overflow-hidden transition-all duration-300 hover:border-secondary hover:shadow-[0_0_20px_-5px_hsl(var(--secondary)/0.6)]">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                   Monitor de Mensagens
                 </CardTitle>
-                <MessageSquare className="w-4 h-4 text-primary" />
+                <MessageSquare className="w-4 h-4 text-secondary group-hover:animate-pulse-glow" />
               </CardHeader>
               <CardContent className="pt-2">
                 <ScrollArea className="h-[420px] pr-3">
@@ -542,7 +550,7 @@ export function AdminDashboard({ onImpersonate }: AdminDashboardProps) {
                     {latestMessages.map((m) => (
                       <div
                         key={m.id}
-                        className="border border-border/70 bg-background/70 px-3 py-2 flex flex-col gap-1"
+                        className="border border-border/70 bg-background/70 px-3 py-2 flex flex-col gap-1 hover:border-secondary hover:shadow-[0_0_16px_-6px_hsl(var(--secondary)/0.6)] transition-all duration-300"
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] text-muted-foreground">{m.sender_id}</span>
