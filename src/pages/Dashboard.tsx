@@ -35,7 +35,7 @@ interface VendorWithRelations extends VendorProfile {
   connections: VendorConnection[];
 }
 
-type AdminTab = "dashboard" | "monitor" | "users";
+type AdminTab = "dashboard" | "usuarios" | "relatorios" | "codigos" | "sistema" | "seguranca";
 
 export default function Dashboard() {
   const { user, loading } = useSupabaseAuth();
@@ -326,6 +326,11 @@ export default function Dashboard() {
     [vendors],
   );
 
+  const totalVendors = vendorsWithConnectionsSplit.length;
+  const totalClients = vendorsWithConnectionsSplit.reduce((acc, v) => acc + v.clients.length, 0);
+  const totalDrivers = vendorsWithConnectionsSplit.reduce((acc, v) => acc + v.drivers.length, 0);
+  const blockedVendors = vendorsWithConnectionsSplit.filter((v) => v.is_blocked).length;
+
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -455,15 +460,19 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setAdminTab("dashboard")}
-                  className={`px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${adminTab === "dashboard" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+                  className={`px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${
+                    adminTab === "dashboard" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                  }`}
                 >
                   <Shield size={10} />
                   VISÃO GERAL
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAdminTab("users")}
-                  className={`px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${adminTab === "users" ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
+                  onClick={() => setAdminTab("usuarios")}
+                  className={`px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${
+                    adminTab === "usuarios" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                  }`}
                 >
                   <Users size={10} />
                   USUÁRIOS
@@ -480,7 +489,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            {adminTab === "users" && (
+            {adminTab === "usuarios" && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
                   <Timer className="text-secondary" size={14} />
