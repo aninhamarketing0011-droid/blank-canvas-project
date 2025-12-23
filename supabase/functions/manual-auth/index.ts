@@ -140,7 +140,19 @@ serve(async (req) => {
         console.error("Erro ao buscar roles:", rolesError);
       }
 
-      const primaryRole = roles && roles.length > 0 ? roles[0].role : "client";
+      const rolePriority = ["admin", "vendor", "driver", "client"] as const;
+      let primaryRole = "client";
+
+      if (roles && roles.length > 0) {
+        const sortedRoles = [...roles].sort((a, b) => {
+          const indexA = rolePriority.indexOf(a.role as (typeof rolePriority)[number]);
+          const indexB = rolePriority.indexOf(b.role as (typeof rolePriority)[number]);
+          const safeA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+          const safeB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+          return safeA - safeB;
+        });
+        primaryRole = sortedRoles[0].role as string;
+      }
 
       const token = generateToken();
 
