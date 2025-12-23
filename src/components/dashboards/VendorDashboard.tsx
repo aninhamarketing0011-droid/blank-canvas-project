@@ -149,7 +149,7 @@ export function VendorDashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* HEADER */}
-      <header className="h-16 border-b border-border/60 flex items-center justify-between px-4 md:px-8 gap-4 bg-background/80 backdrop-blur">
+      <header className="h-16 border-b border-border/60 flex items-center justify-between px-4 md:px-8 gap-4 glass-panel">
         <div className="flex flex-col">
           <span className="text-[11px] font-mono tracking-[0.32em] text-primary/80 uppercase">
             Vendor Control Node
@@ -172,7 +172,7 @@ export function VendorDashboard() {
               CONFIGURAÇÕES
             </Button>
           </Link>
-          <div className="w-9 h-9 rounded-full border border-border flex items-center justify-center bg-muted/40">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-xl border border-white/10">
             <UserCircle2 className="w-5 h-5 text-primary" />
           </div>
         </div>
@@ -181,7 +181,7 @@ export function VendorDashboard() {
       <main className="flex-1 px-4 md:px-8 py-5 space-y-6">
         {/* KPI CARDS */}
         <section className="grid gap-4 md:grid-cols-3">
-          <Card className="bg-background/80 border-primary/40 shadow-[0_0_45px_rgba(0,0,0,0.8)]">
+          <Card className="glass-panel border-purple-500/20 hover:border-purple-500/60 transition-colors shadow-[0_0_45px_rgba(0,0,0,0.8)]">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                 Meus Produtos
@@ -190,7 +190,7 @@ export function VendorDashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <Skeleton className="h-7 w-20 bg-muted" />
+                <Skeleton className="h-7 w-20" />
               ) : (
                 <p className="text-2xl font-mono">
                   {kpis.activeProducts}/{kpis.totalProducts}
@@ -202,7 +202,7 @@ export function VendorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-background/80 border-accent/40">
+          <Card className="glass-panel border-purple-500/20 hover:border-purple-500/60 transition-colors">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                 Meus Clientes
@@ -211,7 +211,7 @@ export function VendorDashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <Skeleton className="h-7 w-16 bg-muted" />
+                <Skeleton className="h-7 w-16" />
               ) : (
                 <p className="text-2xl font-mono">{kpis.totalClients}</p>
               )}
@@ -221,7 +221,7 @@ export function VendorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-background/80 border-emerald-500/40">
+          <Card className="glass-panel border-purple-500/20 hover:border-purple-500/60 transition-colors">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                 Vendas do Dia
@@ -230,7 +230,7 @@ export function VendorDashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <Skeleton className="h-7 w-28 bg-muted" />
+                <Skeleton className="h-7 w-28" />
               ) : (
                 <div className="space-y-1">
                   <p className="text-2xl font-mono">
@@ -251,7 +251,7 @@ export function VendorDashboard() {
         {/* GRID PRINCIPAL */}
         <section className="grid gap-4 lg:grid-cols-3">
           {/* CATÁLOGO RÁPIDO */}
-          <Card className="bg-background/80 border-border/60 lg:col-span-2">
+          <Card className="glass-panel border-purple-500/20 hover:border-purple-500/60 transition-colors lg:col-span-2">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
@@ -273,9 +273,9 @@ export function VendorDashboard() {
             <CardContent>
               {loading ? (
                 <div className="space-y-2">
-                  <Skeleton className="h-8 w-full bg-muted" />
-                  <Skeleton className="h-8 w-full bg-muted" />
-                  <Skeleton className="h-8 w-full bg-muted" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
                 </div>
               ) : products.length === 0 ? (
                 <p className="text-[11px] text-muted-foreground font-mono">
@@ -287,7 +287,7 @@ export function VendorDashboard() {
                     {topProducts.map((product) => (
                       <div
                         key={product.id}
-                        className="flex items-center justify-between rounded border border-border/60 px-3 py-2 hover:bg-muted/40 transition-colors"
+                        className="flex items-center justify-between rounded border border-border/60 px-3 py-2 hover:bg-black/40 hover:backdrop-blur-xl transition-colors"
                       >
                         <div className="flex flex-col">
                           <span className="text-foreground/90">{product.title}</span>
@@ -321,7 +321,7 @@ export function VendorDashboard() {
           </Card>
 
           {/* VISÃO RÁPIDA CLIENTES & RECEITA TOTAL */}
-          <Card className="bg-background/80 border-border/60">
+          <Card className="glass-panel border-purple-500/20 hover:border-purple-500/60 transition-colors">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                 Clientes & Receita
@@ -333,7 +333,7 @@ export function VendorDashboard() {
                   Receita acumulada
                 </p>
                 {loading ? (
-                  <Skeleton className="h-7 w-28 bg-muted" />
+                  <Skeleton className="h-7 w-28" />
                 ) : (
                   <p className="text-xl font-mono">
                     {formatBRL(kpis.totalRevenueCents)}
@@ -346,8 +346,8 @@ export function VendorDashboard() {
                 </p>
                 {loading ? (
                   <div className="space-y-2">
-                    <Skeleton className="h-6 w-full bg-muted" />
-                    <Skeleton className="h-6 w-full bg-muted" />
+                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className="h-6 w-full" />
                   </div>
                 ) : recentClients.length === 0 ? (
                   <p className="text-[11px] text-muted-foreground font-mono">
@@ -358,8 +358,7 @@ export function VendorDashboard() {
                     {recentClients.map((c) => (
                       <div
                         key={c.id}
-                        className="flex items-center justify-between rounded border border-border/60 px-2 py-1"
-                      >
+                        className="flex items-center justify-between rounded border border-border/60 px-2 py-1">
                         <span className="text-muted-foreground/90">
                           {c.client_id.slice(0, 8)}…
                         </span>
@@ -377,7 +376,7 @@ export function VendorDashboard() {
 
         {/* PEDIDOS RECENTES */}
         <section className="grid gap-4 lg:grid-cols-2">
-          <Card className="bg-background/80 border-border/60">
+          <Card className="glass-panel border-purple-500/20 hover:border-purple-500/60 transition-colors">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                 Pedidos Recentes
@@ -386,9 +385,9 @@ export function VendorDashboard() {
             <CardContent>
               {loading ? (
                 <div className="space-y-2">
-                  <Skeleton className="h-8 w-full bg-muted" />
-                  <Skeleton className="h-8 w-full bg-muted" />
-                  <Skeleton className="h-8 w-full bg-muted" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
                 </div>
               ) : recentOrders.length === 0 ? (
                 <p className="text-[11px] text-muted-foreground font-mono">
@@ -400,7 +399,7 @@ export function VendorDashboard() {
                     {recentOrders.map((order) => (
                       <div
                         key={order.id}
-                        className="flex items-center justify-between rounded border border-border/60 px-3 py-2 hover:bg-muted/40 transition-colors"
+                        className="flex items-center justify-between rounded border border-border/60 px-3 py-2 hover:bg-black/40 hover:backdrop-blur-xl transition-colors"
                       >
                         <div className="flex flex-col">
                           <span className="text-foreground/90">
@@ -437,7 +436,7 @@ export function VendorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-background/80 border-border/60">
+          <Card className="glass-panel border-purple-500/20 hover:border-purple-500/60 transition-colors">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] tracking-[0.22em] text-muted-foreground font-mono uppercase">
                 Atividade do Sistema
