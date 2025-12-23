@@ -17,44 +17,11 @@ serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization") ?? "";
-
-    if (!authHeader.toLowerCase().startsWith("bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Requisição não autenticada." }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        },
-      );
-    }
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: {
         persistSession: false,
       },
-      global: {
-        headers: {
-          Authorization: authHeader,
-        },
-      },
     });
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      console.error("Falha ao obter usuário autenticado em link-invite-user:", authError);
-      return new Response(
-        JSON.stringify({ error: "Falha na autenticação do usuário." }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        },
-      );
-    }
 
     const body = await req.json().catch(() => null);
 
@@ -76,16 +43,6 @@ serve(async (req) => {
         JSON.stringify({ error: "userId e code são obrigatórios." }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        },
-      );
-    }
-
-    if (user.id !== userId) {
-      return new Response(
-        JSON.stringify({ error: "Usuário autenticado não corresponde ao userId enviado." }),
-        {
-          status: 403,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         },
       );
