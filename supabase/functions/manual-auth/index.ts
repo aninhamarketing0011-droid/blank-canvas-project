@@ -44,7 +44,7 @@ serve(async (req) => {
       );
     }
 
-    const username = body.username.trim().toLowerCase();
+    const username = body.username.trim();
     const pin = body.pin.trim();
 
     if (pin.length < 4 || pin.length > 10) {
@@ -58,56 +58,25 @@ serve(async (req) => {
     }
 
     if (body.action === "register") {
-      const salt = genSaltSync(10);
-      const pinHash = hashSync(pin, salt);
-
-      const { data, error } = await supabaseAdmin
-        .from("users")
-        .insert({ username, pin_hash: pinHash })
-        .select("id, username, role")
-        .single();
-
-      if (error) {
-        console.error("Erro ao registrar usuário:", error);
-        return new Response(
-          JSON.stringify({ error: "Falha ao registrar usuário" }),
-          {
-            status: 500,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          },
-        );
-      }
-
-      const token = generateToken();
-      const { error: sessionError } = await supabaseAdmin
-        .from("sessions")
-        .insert({ user_id: data.id, token });
-
-      if (sessionError) {
-        console.error("Erro ao criar sessão:", sessionError);
-      }
-
       return new Response(
-        JSON.stringify({
-          token,
-          user: { id: data.id, username: data.username, role: data.role },
-        }),
+        JSON.stringify({ error: "Registro via manual-auth não suportado. Use o fluxo padrão de cadastro." }),
         {
-          status: 200,
+          status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         },
       );
     }
 
     if (body.action === "login") {
-      const { data, error } = await supabaseAdmin
-        .from("users")
-        .select("id, username, role, pin_hash")
-        .eq("username", username)
+      // 1) Localiza o perfil pelo username (case-insensitive)
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .select("id, username, pin_hash")
+        .ilike("username", username)
         .maybeSingle();
 
-      if (error) {
-        console.error("Erro ao buscar usuário:", error);
+      if (profileError) {
+        console.error("Erro ao buscar perfil:", profileError);
         return new Response(
           JSON.stringify({ error: "Falha ao buscar usuário" }),
           {
@@ -117,7 +86,7 @@ serve(async (req) => {
         );
       }
 
-      if (!data || !data.pin_hash) {
+      if (!profile) {
         return new Response(
           JSON.stringify({ error: "Usuário ou PIN inválidos" }),
           {
@@ -127,30 +96,62 @@ serve(async (req) => {
         );
       }
 
-      const isValid = compareSync(pin, data.pin_hash);
-      if (!isValid) {
-        return new Response(
-          JSON.stringify({ error: "Usuário ou PIN inválidos" }),
-          {
-            status: 401,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          },
-        );
+      // 2) Se ainda não existe PIN gravado nesse perfil, esse primeiro login define o PIN
+      if (!profile.pin_hash) {
+        const salt = genSaltSync(10);
+        const pinHash = hashSync(pin, salt);
+
+        const { error: updateError } = await supabaseAdmin
+          .from("profiles")
+          .update({ pin_hash: pinHash })
+          .eq("id", profile.id);
+
+        if (updateError) {
+          console.error("Erro ao definir PIN no perfil:", updateError);
+          return new Response(
+            JSON.stringify({ error: "Falha ao registrar PIN" }),
+            {
+              status: 500,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            },
+          );
+        }
+      } else {
+        // 3) Se já existe PIN, valida
+        const isValid = compareSync(pin, profile.pin_hash);
+        if (!isValid) {
+          return new Response(
+            JSON.stringify({ error: "Usuário ou PIN inválidos" }),
+            {
+              status: 401,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            },
+          );
+        }
       }
+
+      // 4) Descobre o papel principal desse usuário a partir de user_roles
+      const { data: roles, error: rolesError } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", profile.id);
+
+      if (rolesError) {
+        console.error("Erro ao buscar roles:", rolesError);
+      }
+
+      const primaryRole = roles && roles.length > 0 ? roles[0].role : "client";
 
       const token = generateToken();
-      const { error: sessionError } = await supabaseAdmin
-        .from("sessions")
-        .insert({ user_id: data.id, token });
-
-      if (sessionError) {
-        console.error("Erro ao criar sessão:", sessionError);
-      }
 
       return new Response(
         JSON.stringify({
           token,
-          user: { id: data.id, username: data.username, role: data.role },
+          user: {
+            id: profile.id,
+            username: profile.username ?? username,
+            role: primaryRole,
+          },
         }),
         {
           status: 200,
