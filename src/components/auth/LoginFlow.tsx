@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { PinLock } from "@/components/PinLock";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { usernameToEmail } from "@/lib/authHelpers";
-
+import { saveManualSession } from "@/lib/manualSession";
 interface LoginFlowProps {
   onBack: () => void;
   onLoginSuccess: () => void;
@@ -48,26 +47,20 @@ export function LoginFlow({ onBack, onLoginSuccess }: LoginFlowProps) {
     setError("");
     setLoading(true);
 
-    const email = usernameToEmail(username);
-    const password = `${code}#secret`;
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const { data, error } = await supabase.functions.invoke("manual-auth", {
+      body: {
+        action: "login",
+        username,
+        pin: code,
+      },
     });
 
     setLoading(false);
 
-    if (error) {
-      const raw = (error.message || "").toLowerCase();
-      let userMessage = "Falha na autenticação. Verifique USERNAME e PIN.";
-
-      if (raw.includes("invalid login") || raw.includes("invalid credentials") || raw.includes("invalid email or password") || raw.includes("invalid password")) {
-        userMessage = "Username ou PIN incorretos.";
-      } else if (raw.includes("email not confirmed")) {
-        userMessage =
-          "Seu acesso ainda não foi liberado pelo sistema. Fale com o administrador para ativar sua conta.";
-      }
+    if (error || !data) {
+      const userMessage =
+        (data as any)?.error ||
+        "Falha na autenticação. Verifique USERNAME e PIN.";
 
       setError(userMessage);
       toast({
@@ -77,6 +70,9 @@ export function LoginFlow({ onBack, onLoginSuccess }: LoginFlowProps) {
       });
       return;
     }
+
+    const payload = data as { token: string; user: { id: string; username: string; role: string } };
+    saveManualSession(payload);
 
     onLoginSuccess();
   };
