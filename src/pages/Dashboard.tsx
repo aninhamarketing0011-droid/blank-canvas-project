@@ -6,44 +6,39 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
-type VendorConnectionType = "client" | "driver";
-
-interface ProfileBase {
+interface VendorLink {
   id: string;
-  display_name: string | null;
-  username: string | null;
-  whatsapp: string | null;
-}
-
-interface VendorProfile extends ProfileBase {
-  is_blocked: boolean;
-  vendor_access_expires_at: string | null;
-}
-
-interface VendorConnection {
-  id: string;
-  vendor_id: string;
-  associate_id: string;
-  type: VendorConnectionType;
-  status: string;
+  user_id: string;
   is_blocked: boolean;
   access_expires_at: string | null;
-  associate_profile?: ProfileBase;
+  created_at: string;
 }
 
-interface VendorWithRelations extends VendorProfile {
-  connections: VendorConnection[];
+interface VendorNode {
+  id: string;
+  display_name: string | null;
+  is_blocked: boolean;
+  access_expires_at: string | null;
+  mercado_pago_enabled: boolean;
+  created_at: string;
+  clients: VendorLink[];
+  drivers: VendorLink[];
 }
 
-type AdminTab = "dashboard" | "usuarios" | "relatorios" | "codigos" | "sistema" | "seguranca";
+type AdminTab = "visao" | "redes" | "financeiro" | "monitor" | "codigos";
+
 
 export default function Dashboard() {
   const { user, loading } = useSupabaseAuth();
   const [roles, setRoles] = useState<string[]>([]);
   const [displayName, setDisplayName] = useState<string>("");
-  const [adminTab, setAdminTab] = useState<AdminTab>("dashboard");
-  const [vendors, setVendors] = useState<VendorWithRelations[]>([]);
+  const [adminTab, setAdminTab] = useState<AdminTab>("visao");
+  const [vendors, setVendors] = useState<VendorNode[]>([]);
   const [loadingVendors, setLoadingVendors] = useState(false);
+  const [financeLoading, setFinanceLoading] = useState(false);
+  const [financeRows, setFinanceRows] = useState<
+    { vendor_id: string; total_cents: number; order_count: number; total_commission_cents: number }[]
+  >([]);
   const [timerInputs, setTimerInputs] = useState<Record<string, string>>({});
   const [vendorProfile, setVendorProfile] = useState<{
     is_blocked: boolean;
@@ -116,72 +111,69 @@ export default function Dashboard() {
     const loadVendorsHierarchy = async () => {
       setLoadingVendors(true);
       try {
-        const { data: vendorRoleRows, error: vendorRoleError } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "vendor");
-
-        if (vendorRoleError) throw vendorRoleError;
-        const vendorIds = (vendorRoleRows ?? []).map((r) => r.user_id as string);
-        if (!vendorIds.length) {
-          setVendors([]);
-          return;
-        }
-
-        const [profilesRes, connectionsRes] = await Promise.all([
+        const [vendorsRes, clientsRes, driversRes] = await Promise.all([
           supabase
-            .from("profiles")
-            .select("id, display_name, username, whatsapp, is_blocked, vendor_access_expires_at")
-            .in("id", vendorIds),
+            .from("vendors")
+            .select("id, display_name, is_blocked, access_expires_at, mercado_pago_enabled, created_at"),
           supabase
-            .from("vendor_connections")
-            .select("id, vendor_id, associate_id, type, status, is_blocked, access_expires_at"),
+            .from("vendor_clients")
+            .select("id, vendor_id, client_id, is_blocked, access_expires_at, created_at"),
+          supabase
+            .from("vendor_drivers")
+            .select("id, vendor_id, driver_id, is_blocked, access_expires_at, created_at"),
         ]);
 
-        if (profilesRes.error) throw profilesRes.error;
-        if (connectionsRes.error) throw connectionsRes.error;
+        if (vendorsRes.error) throw vendorsRes.error;
+        if (clientsRes.error) throw clientsRes.error;
+        if (driversRes.error) throw driversRes.error;
 
-        const vendorProfiles = (profilesRes.data ?? []) as VendorProfile[];
-        const allConnections = (connectionsRes.data ?? []) as VendorConnection[];
+        const vendorBase: Record<string, VendorNode> = {};
 
-        const associateIds = Array.from(
-          new Set(allConnections.map((c) => c.associate_id)),
-        );
+        (vendorsRes.data ?? []).forEach((v: any) => {
+          vendorBase[v.id as string] = {
+            id: v.id as string,
+            display_name: (v.display_name as string | null) ?? null,
+            is_blocked: (v.is_blocked as boolean) ?? false,
+            access_expires_at: (v.access_expires_at as string | null) ?? null,
+            mercado_pago_enabled: (v.mercado_pago_enabled as boolean) ?? false,
+            created_at: v.created_at as string,
+            clients: [],
+            drivers: [],
+          };
+        });
 
-        let associateProfilesMap: Record<string, ProfileBase> = {};
-        if (associateIds.length) {
-          const { data: associateProfiles, error: associateError } = await supabase
-            .from("profiles")
-            .select("id, display_name, username, whatsapp")
-            .in("id", associateIds);
+        const clientsByVendor: Record<string, VendorLink[]> = {};
+        (clientsRes.data ?? []).forEach((c: any) => {
+          const vendorId = c.vendor_id as string;
+          if (!clientsByVendor[vendorId]) clientsByVendor[vendorId] = [];
+          clientsByVendor[vendorId].push({
+            id: c.id as string,
+            user_id: c.client_id as string,
+            is_blocked: (c.is_blocked as boolean) ?? false,
+            access_expires_at: (c.access_expires_at as string | null) ?? null,
+            created_at: c.created_at as string,
+          });
+        });
 
-          if (associateError) throw associateError;
+        const driversByVendor: Record<string, VendorLink[]> = {};
+        (driversRes.data ?? []).forEach((d: any) => {
+          const vendorId = d.vendor_id as string;
+          if (!driversByVendor[vendorId]) driversByVendor[vendorId] = [];
+          driversByVendor[vendorId].push({
+            id: d.id as string,
+            user_id: d.driver_id as string,
+            is_blocked: (d.is_blocked as boolean) ?? false,
+            access_expires_at: (d.access_expires_at as string | null) ?? null,
+            created_at: d.created_at as string,
+          });
+        });
 
-          associateProfilesMap = (associateProfiles ?? []).reduce(
-            (acc, p) => ({
-              ...acc,
-              [p.id as string]: {
-                id: p.id as string,
-                display_name: p.display_name ?? null,
-                username: p.username ?? null,
-                whatsapp: p.whatsapp ?? null,
-              },
-            }),
-            {} as Record<string, ProfileBase>,
-          );
-        }
+        Object.values(vendorBase).forEach((v) => {
+          v.clients = clientsByVendor[v.id] ?? [];
+          v.drivers = driversByVendor[v.id] ?? [];
+        });
 
-        const vendorsWithRelations: VendorWithRelations[] = vendorProfiles.map((vp) => ({
-          ...vp,
-          connections: allConnections
-            .filter((c) => c.vendor_id === vp.id)
-            .map((c) => ({
-              ...c,
-              associate_profile: associateProfilesMap[c.associate_id],
-            })),
-        }));
-
-        setVendors(vendorsWithRelations);
+        setVendors(Object.values(vendorBase));
       } catch (error) {
         console.error(error);
         toast({
@@ -281,6 +273,9 @@ export default function Dashboard() {
     return `${days}d ${hours}h restantes`;
   };
 
+  const formatCurrencyBRL = (valueInCents: number) =>
+    (valueInCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
   useEffect(() => {
     if (!vendorProfile) {
       setVendorAccessStatus("no_timer");
@@ -316,20 +311,10 @@ export default function Dashboard() {
     return () => window.clearInterval(interval);
   }, [vendorProfile]);
 
-  const vendorsWithConnectionsSplit = useMemo(
-    () =>
-      vendors.map((v) => ({
-        ...v,
-        clients: v.connections.filter((c) => c.type === "client"),
-        drivers: v.connections.filter((c) => c.type === "driver"),
-      })),
-    [vendors],
-  );
-
-  const totalVendors = vendorsWithConnectionsSplit.length;
-  const totalClients = vendorsWithConnectionsSplit.reduce((acc, v) => acc + v.clients.length, 0);
-  const totalDrivers = vendorsWithConnectionsSplit.reduce((acc, v) => acc + v.drivers.length, 0);
-  const blockedVendors = vendorsWithConnectionsSplit.filter((v) => v.is_blocked).length;
+  const totalVendors = vendors.length;
+  const totalClients = vendors.reduce((acc, v) => acc + v.clients.length, 0);
+  const totalDrivers = vendors.reduce((acc, v) => acc + v.drivers.length, 0);
+  const blockedVendors = vendors.filter((v) => v.is_blocked).length;
 
   if (loading || !user) {
     return (
