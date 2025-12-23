@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
       admin_commissions: {
         Row: {
           commission_cents: number
@@ -55,6 +73,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      calls: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
       }
       chat_messages: {
         Row: {
@@ -156,6 +192,153 @@ export type Database = {
         }
         Relationships: []
       }
+      chats_legacy: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      codigos: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      connections_legacy: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      credit_clients: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      credit_ledger: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      depositors: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      driver_commissions_legacy: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      drivercommissions: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
       invite_codes: {
         Row: {
           code: string
@@ -186,6 +369,24 @@ export type Database = {
           status?: Database["public"]["Enums"]["invite_status"]
           used_at?: string | null
           used_by?: string | null
+        }
+        Relationships: []
+      }
+      keys_legacy: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
         }
         Relationships: []
       }
@@ -273,6 +474,24 @@ export type Database = {
         }
         Relationships: []
       }
+      pedidos: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
@@ -306,6 +525,24 @@ export type Database = {
           title?: string
           updated_at?: string
           vendor_id?: string
+        }
+        Relationships: []
+      }
+      produtos: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
         }
         Relationships: []
       }
@@ -369,6 +606,74 @@ export type Database = {
         }
         Relationships: []
       }
+      recipients: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -387,6 +692,30 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string
+          id: string
+          pin_hash: string
+          role: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pin_hash: string
+          role?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pin_hash?: string
+          role?: string
+          username?: string
         }
         Relationships: []
       }
@@ -498,6 +827,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vendorcommissions: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      vendorconfigs: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+        }
+        Relationships: []
       }
       vendors: {
         Row: {
