@@ -4,7 +4,7 @@ project_id = "xlahlhjhuokpzwczqzoz"
 verify_jwt = false
 
 [functions.validate-invite]
-verify_jwt = true
+verify_jwt = false
 
 [functions.link-invite-user]
 verify_jwt = true
