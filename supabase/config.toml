@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.link-invite-user]
 verify_jwt = false
+
+[functions.pin-login-telemetry]
+verify_jwt = false

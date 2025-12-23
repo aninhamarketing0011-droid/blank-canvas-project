@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { PinLock } from "@/components/PinLock";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { usernameToEmail } from "@/lib/authHelpers";
 import type { RegisterCode } from "@/pages/Index";
 
 interface RegisterFlowProps {
@@ -89,7 +90,7 @@ export function RegisterFlow({ codeData, inviteCode, onBack, onComplete }: Regis
     setLoading(true);
     setError("");
 
-    const email = `${formData.usuario.trim().toLowerCase()}@sys.app`;
+    const email = usernameToEmail(formData.usuario);
     const password = `${code}#secret`;
     const redirectUrl = `${window.location.origin}/`;
 
