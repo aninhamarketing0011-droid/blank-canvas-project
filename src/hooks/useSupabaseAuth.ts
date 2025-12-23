@@ -1,31 +1,31 @@
 import { useEffect, useState } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import type { ManualSession, ManualUser } from "@/lib/manualSession";
+import { getManualSession } from "@/lib/manualSession";
 
 export function useSupabaseAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<ManualUser | null>(null);
+  const [session, setSession] = useState<ManualSession | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
+    const load = () => {
+      const current = getManualSession();
+      setSession(current);
+      setUser(current?.user ?? null);
       setLoading(false);
-    });
+    };
 
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        setSession(data.session ?? null);
-        setUser(data.session?.user ?? null);
-      })
-      .finally(() => setLoading(false));
+    load();
 
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "darktech_manual_session") {
+        load();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
     return () => {
-      subscription.unsubscribe();
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 

@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.pin-login-telemetry]
 verify_jwt = false
+
+[functions.manual-auth]
+verify_jwt = false
