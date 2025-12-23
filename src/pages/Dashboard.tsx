@@ -1,5 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { Shield, UserCircle2, Users, Timer, Lock, Unlock, ShoppingBag, Truck, Activity } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Shield,
+  UserCircle2,
+  Users,
+  Timer,
+  Lock,
+  Unlock,
+  ShoppingBag,
+  Truck,
+  Activity,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -27,7 +37,6 @@ interface VendorNode {
 
 type AdminTab = "visao" | "redes" | "financeiro" | "monitor" | "codigos";
 
-
 export default function Dashboard() {
   const { user, loading } = useSupabaseAuth();
   const [roles, setRoles] = useState<string[]>([]);
@@ -35,10 +44,6 @@ export default function Dashboard() {
   const [adminTab, setAdminTab] = useState<AdminTab>("visao");
   const [vendors, setVendors] = useState<VendorNode[]>([]);
   const [loadingVendors, setLoadingVendors] = useState(false);
-  const [financeLoading, setFinanceLoading] = useState(false);
-  const [financeRows, setFinanceRows] = useState<
-    { vendor_id: string; total_cents: number; order_count: number; total_commission_cents: number }[]
-  >([]);
   const [timerInputs, setTimerInputs] = useState<Record<string, string>>({});
   const [vendorProfile, setVendorProfile] = useState<{
     is_blocked: boolean;
@@ -48,7 +53,6 @@ export default function Dashboard() {
     "blocked" | "expired" | "no_timer" | "active"
   >("no_timer");
   const [vendorRemainingText, setVendorRemainingText] = useState<string>("");
-  const [vendorTab, setVendorTab] = useState<"dashboard" | "monitor" | "users">("dashboard");
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -105,6 +109,7 @@ export default function Dashboard() {
 
   const isAdmin = roles.includes("admin");
 
+  // Carrega hierarquia usando APENAS as novas tabelas vendors, vendor_clients, vendor_drivers
   useEffect(() => {
     if (!isAdmin) return;
 
@@ -212,8 +217,8 @@ export default function Dashboard() {
     const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 
     const { error } = await supabase
-      .from("profiles")
-      .update({ vendor_access_expires_at: expiresAt })
+      .from("vendors")
+      .update({ access_expires_at: expiresAt })
       .eq("id", vendorId);
 
     if (error) {
@@ -226,7 +231,7 @@ export default function Dashboard() {
     }
 
     setVendors((prev) =>
-      prev.map((v) => (v.id === vendorId ? { ...v, vendor_access_expires_at: expiresAt } : v)),
+      prev.map((v) => (v.id === vendorId ? { ...v, access_expires_at: expiresAt } : v)),
     );
 
     toast({
@@ -237,7 +242,7 @@ export default function Dashboard() {
 
   const handleToggleVendorBlock = async (vendorId: string, currentlyBlocked: boolean) => {
     const { error } = await supabase
-      .from("profiles")
+      .from("vendors")
       .update({ is_blocked: !currentlyBlocked })
       .eq("id", vendorId);
 
@@ -272,9 +277,6 @@ export default function Dashboard() {
     const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
     return `${days}d ${hours}h restantes`;
   };
-
-  const formatCurrencyBRL = (valueInCents: number) =>
-    (valueInCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   useEffect(() => {
     if (!vendorProfile) {
@@ -394,7 +396,15 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Shield className="text-primary" size={18} />
               <p className="font-mono text-sm text-foreground">
-                {isAdmin ? "ADMINISTRADOR DO SISTEMA" : roles.includes("vendor") ? "PAINEL VENDEDOR" : roles.includes("driver") ? "PAINEL MOTORISTA" : roles.includes("client") ? "PAINEL CLIENTE" : "OPERADOR"}
+                {isAdmin
+                  ? "ADMINISTRADOR DO SISTEMA"
+                  : roles.includes("vendor")
+                    ? "PAINEL VENDEDOR"
+                    : roles.includes("driver")
+                      ? "PAINEL MOTORISTA"
+                      : roles.includes("client")
+                        ? "PAINEL CLIENTE"
+                        : "OPERADOR"}
               </p>
             </div>
           </div>
@@ -439,14 +449,14 @@ export default function Dashboard() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-border pb-3 mb-2">
               <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
                 <Users className="text-primary" size={16} />
-                <span>PAINEL ADMIN</span>
+                <span>ADMIN CORE</span>
               </div>
               <div className="inline-flex rounded-full border border-border bg-background/80 p-1 text-[10px] font-mono uppercase tracking-[0.15em]">
                 <button
                   type="button"
-                  onClick={() => setAdminTab("dashboard")}
+                  onClick={() => setAdminTab("visao")}
                   className={`px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${
-                    adminTab === "dashboard" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    adminTab === "visao" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                   }`}
                 >
                   <Shield size={10} />
@@ -454,44 +464,92 @@ export default function Dashboard() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAdminTab("usuarios")}
+                  onClick={() => setAdminTab("redes")}
                   className={`px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${
-                    adminTab === "usuarios" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                    adminTab === "redes" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
                   }`}
                 >
                   <Users size={10} />
-                  USUÁRIOS
+                  REDES & HIERARQUIA
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdminTab("financeiro")}
+                  className={`px-3 py-1 rounded-full hidden md:flex items-center gap-1 transition-colors ${
+                    adminTab === "financeiro"
+                      ? "bg-secondary text-secondary-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <ShoppingBag size={10} />
+                  FINANCEIRO
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdminTab("monitor")}
+                  className={`px-3 py-1 rounded-full hidden md:flex items-center gap-1 transition-colors ${
+                    adminTab === "monitor" ? "bg-muted text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  <Activity size={10} />
+                  MONITOR
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdminTab("codigos")}
+                  className={`px-3 py-1 rounded-full items-center gap-1 transition-colors ${
+                    adminTab === "codigos" ? "bg-border text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  <Timer size={10} />
+                  CÓDIGOS
                 </button>
               </div>
             </div>
 
-            {adminTab === "dashboard" && (
-              <div className="border border-primary/30 bg-background/60 p-4 text-[10px] font-mono text-muted-foreground uppercase tracking-[0.18em]">
-                <p>
-                  Nesta visão você verá resumos de vendedores, convites, comissões e segurança. Por
-                  enquanto, utilize a aba USUÁRIOS para controlar a hierarquia e timers de acesso.
-                </p>
+            {adminTab === "visao" && (
+              <div className="grid md:grid-cols-4 gap-3 text-[10px] font-mono uppercase tracking-[0.16em]">
+                <div className="border border-primary/40 bg-background/80 p-3 flex flex-col gap-1">
+                  <span className="text-primary">VENDEDORES</span>
+                  <span className="text-foreground text-lg leading-none">{totalVendors}</span>
+                  <span className="text-muted-foreground text-[9px]">ativos no sistema</span>
+                </div>
+                <div className="border border-secondary/40 bg-background/80 p-3 flex flex-col gap-1">
+                  <span className="text-secondary">CLIENTES</span>
+                  <span className="text-foreground text-lg leading-none">{totalClients}</span>
+                  <span className="text-muted-foreground text-[9px]">vinculados às redes</span>
+                </div>
+                <div className="border border-accent/40 bg-background/80 p-3 flex flex-col gap-1">
+                  <span className="text-accent">MOTORISTAS</span>
+                  <span className="text-foreground text-lg leading-none">{totalDrivers}</span>
+                  <span className="text-muted-foreground text-[9px]">em operação</span>
+                </div>
+                <div className="border border-destructive/40 bg-background/80 p-3 flex flex-col gap-1">
+                  <span className="text-destructive">BLOQUEADOS</span>
+                  <span className="text-foreground text-lg leading-none">{blockedVendors}</span>
+                  <span className="text-muted-foreground text-[9px]">sem acesso</span>
+                </div>
               </div>
             )}
 
-            {adminTab === "usuarios" && (
+            {adminTab === "redes" && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-                  <Timer className="text-secondary" size={14} />
-                  <span>HIERARQUIA VENDEDOR &gt; CLIENTES / MOTORISTAS</span>
+                  <Truck className="text-secondary" size={14} />
+                  <span>VENDOR \\ CLIENTES \\ FROTA</span>
                 </div>
 
                 {loadingVendors ? (
                   <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em]">
-                    Carregando hierarquia de usuários...
+                    Carregando hierarquia...
                   </div>
-                ) : vendorsWithConnectionsSplit.length === 0 ? (
+                ) : vendors.length === 0 ? (
                   <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em]">
-                    Nenhum vendedor cadastrado ainda.
+                    Nenhum vendor registrado.
                   </div>
                 ) : (
                   <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
-                    {vendorsWithConnectionsSplit.map((vendor) => (
+                    {vendors.map((vendor) => (
                       <details
                         key={vendor.id}
                         className="group border border-accent/50 bg-card/80 rounded-sm p-4 hover-scale transition-colors"
@@ -502,20 +560,21 @@ export default function Dashboard() {
                               VENDEDOR
                             </span>
                             <span className="font-mono text-sm text-foreground">
-                              {vendor.display_name || vendor.username || vendor.id.slice(0, 8)}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground font-mono">
-                              WhatsApp: {vendor.whatsapp || "não informado"}
+                              {vendor.display_name || vendor.id.slice(0, 8)}
                             </span>
                             <span className="text-[10px] text-muted-foreground font-mono flex flex-wrap gap-1 items-center">
                               <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] ${vendor.is_blocked ? "border-destructive text-destructive" : "border-primary text-primary"}`}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] ${
+                                  vendor.is_blocked
+                                    ? "border-destructive text-destructive"
+                                    : "border-primary text-primary"
+                                }`}
                               >
                                 {vendor.is_blocked ? <Lock size={10} /> : <Unlock size={10} />}
                                 {vendor.is_blocked ? "BLOQUEADO" : "ATIVO"}
                               </span>
                               <span className="text-[9px] text-muted-foreground">
-                                {formatRemainingTime(vendor.vendor_access_expires_at)}
+                                {formatRemainingTime(vendor.access_expires_at)}
                               </span>
                             </span>
                           </div>
@@ -583,16 +642,13 @@ export default function Dashboard() {
                                     className="border border-secondary/40 bg-background/80 px-2 py-1 flex flex-col gap-0.5"
                                   >
                                     <span className="text-secondary-foreground">
-                                      {c.associate_profile?.display_name ||
-                                        c.associate_profile?.username ||
-                                        c.associate_id.slice(0, 8)}
+                                      CLIENTE {c.user_id.slice(0, 8)}
                                     </span>
                                     <span className="text-[9px] text-muted-foreground">
-                                      WhatsApp:{" "}
-                                      {c.associate_profile?.whatsapp || "não informado"}
+                                      Status: {c.is_blocked ? "BLOQUEADO" : "ATIVO"}
                                     </span>
                                     <span className="text-[9px] text-muted-foreground">
-                                      Status conexão: {c.is_blocked ? "BLOQUEADA" : c.status}
+                                      Expira: {formatRemainingTime(c.access_expires_at)}
                                     </span>
                                   </li>
                                 ))}
@@ -612,16 +668,13 @@ export default function Dashboard() {
                                     className="border border-destructive/40 bg-background/80 px-2 py-1 flex flex-col gap-0.5"
                                   >
                                     <span className="text-destructive-foreground">
-                                      {d.associate_profile?.display_name ||
-                                        d.associate_profile?.username ||
-                                        d.associate_id.slice(0, 8)}
+                                      MOTORISTA {d.user_id.slice(0, 8)}
                                     </span>
                                     <span className="text-[9px] text-muted-foreground">
-                                      WhatsApp:{" "}
-                                      {d.associate_profile?.whatsapp || "não informado"}
+                                      Status: {d.is_blocked ? "BLOQUEADO" : "ATIVO"}
                                     </span>
                                     <span className="text-[9px] text-muted-foreground">
-                                      Status conexão: {d.is_blocked ? "BLOQUEADA" : d.status}
+                                      Expira: {formatRemainingTime(d.access_expires_at)}
                                     </span>
                                   </li>
                                 ))}
@@ -633,6 +686,24 @@ export default function Dashboard() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {adminTab === "financeiro" && (
+              <div className="border border-border bg-background/80 p-4 text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
+                <p>Relatórios financeiros detalhados por vendedor serão exibidos aqui.</p>
+              </div>
+            )}
+
+            {adminTab === "monitor" && (
+              <div className="border border-border bg-background/80 p-4 text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
+                <p>Monitor de eventos em tempo real será conectado aos logs de pedidos e chat.</p>
+              </div>
+            )}
+
+            {adminTab === "codigos" && (
+              <div className="border border-border bg-background/80 p-4 text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
+                <p>Gestão de códigos e integrações ficará centralizada aqui em uma próxima etapa.</p>
               </div>
             )}
           </section>
