@@ -32,6 +32,8 @@
   * { @apply border-border; }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    padding-top: max(1.25rem, env(safe-area-inset-top));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
     /* EFEITO GRID TÁTICO DE FUNDO */
     background-image: 
       radial-gradient(circle at 50% 0%, rgba(0, 255, 135, 0.05), transparent 40%),
@@ -49,6 +51,28 @@
     background-size: 100% 4px;
   }
   .animate-pulse-glow { animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+  /* Safe-area helpers para app mobile (notch / gestos) */
+  .safe-area-y {
+    padding-top: max(1.25rem, env(safe-area-inset-top));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-floating-button {
+    bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
+
+  .safe-panel-bottom {
+    bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
 }
 
 @keyframes glitch {
