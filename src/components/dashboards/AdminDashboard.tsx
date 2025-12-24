@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   Activity,
   ChevronDown,
@@ -21,7 +20,6 @@ import {
   X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,23 +27,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminDashboardData } from "@/hooks/useAdminDashboardData";
 
 interface AdminDashboardProps {
   onImpersonate?: (vendorId: string) => void;
-}
-
-type Profile = Tables<"profiles">;
-type VendorConnection = Tables<"vendor_connections">;
-type MessageRow = Tables<"chat_messages">;
-type OrderRow = Tables<"orders">;
-type UserRoleRow = Tables<"user_roles">;
-type AdminCommissionRow = Tables<"admin_commissions">;
-type InviteCodeRow = Tables<"invite_codes">;
-
-interface VendorHierarchyNode {
-  profile: Profile;
-  clients: Profile[];
-  drivers: Profile[];
 }
 
 function formatCurrencyBRL(valueCents: number | null | undefined) {
